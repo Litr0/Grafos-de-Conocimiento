@@ -1,0 +1,28 @@
+@prefix ex: <http://example.org/mi-schema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+ex:Student rdf:type rdfs:Class ;
+    rdfs:subClassOf foaf:Person ;
+    rdfs:label "Student" ;
+    rdfs:comment "A class representing students." .
+
+ex:estudiaEn rdf:type rdf:Property ;
+    rdfs:domain ex:Student ;
+    rdfs:range  <http://www.wikidata.org/entity/Q3918> ;
+    rdfs:label "estudiaEn" ;
+    rdfs:comment "Property indicating the institution where a student studies." .
+
+ex:gonzalosobarzo a ex:Student ;  
+    foaf:name "Gonzalo Andrés Sobarzo Abufon" ; 
+    foaf:mbox <mailto:gonzalo.sobarzo@ug.uchile.cl> ; 
+    foaf:depiction <https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPNbAxIEfBBEa2BUdwlS6YAXJYqbYfggLn4A&s> ;
+    foaf:homepage <https://www.linkedin.com/in/gonzalo-sobarzo-abufon/> ;
+    foaf:interest "Football", "Programming", "Traveling", "Boxing" ; 
+    foaf:knows ex:javiu, ex:AgusVicho ;
+    ex:estudiaEn <https://www.wikidata.org/entity/Q232141> .
+
+ex:javiu a ex:Student .
+
+ex:AgusVicho a ex:Student .
