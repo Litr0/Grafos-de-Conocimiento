@@ -1,0 +1,55 @@
+@prefix : <http://example.org/hotd/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# Laboratorio 2
+# Integrantes:
+# - Gonzalo Sobarzo
+
+
+# P1
+# hasSpouse is a symmetric property
+:hasSpouse a owl:SymmetricProperty .
+# engagedTo is a symmetric property
+:engagedTo a owl:SymmetricProperty .
+
+# P2
+# Define hasParent
+:hasParent a owl:ObjectProperty ;
+    owl:inverseOf :hasChild .
+
+# P3
+# ancestorOf is a transitive property and hasChild is a subproperty of ancestorOf
+:ancestorOf a owl:ObjectProperty, owl:TransitiveProperty .
+:hasChild rdfs:subPropertyOf :ancestorOf .
+
+# P4
+# Define hasSibling: two people are siblings if one person's parent
+# is also parent of the other (via hasParent -> hasChild chain).
+:hasSibling a owl:ObjectProperty, owl:SymmetricProperty, owl:IrreflexiveProperty ;
+    owl:propertyChainAxiom ( :hasParent :hasChild ) .
+
+# Define hasCousin: a person is cousin of another if
+# person -> parent -> sibling of parent -> child.
+:hasCousin a owl:ObjectProperty, owl:SymmetricProperty, owl:IrreflexiveProperty;
+    owl:propertyChainAxiom ( :hasParent :hasSibling :hasChild ) .
+
+# Cousins and siblings cannot be the same relation.
+:hasCousin owl:propertyDisjointWith :hasSibling .
+
+# P5
+# Class of people that belong to House Targaryen
+:Targaryen a owl:Class ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:intersectionOf (
+            :Person
+            [ a owl:Restriction ;
+              owl:onProperty :memberOf ;
+              owl:hasValue :HouseTargaryen
+            ]
+        )
+    ] .
+
+# P6
