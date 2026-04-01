@@ -53,3 +53,41 @@
     ] .
 
 # P6
+# Define the Valyrian class as the people that belong to House Targaryen, House Velaryion or  House Celtigar.
+
+:Valyrian a owl:Class ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:unionOf (
+            [ a owl:Restriction ;
+              owl:onProperty :memberOf ;
+              owl:hasValue :HouseTargaryen
+            ]
+            [ a owl:Restriction ;
+              owl:onProperty :memberOf ;
+              owl:hasValue :HouseVelaryon
+            ]
+            [ a owl:Restriction ;
+              owl:onProperty :memberOf ;
+              owl:hasValue :HouseCeltigar
+            ]
+        )
+    ] .
+
+# P7
+# Define the Andal class as the people that are not Valyrian.
+:Andal a owl:Class ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:complementOf :Valyrian
+    ] .
+
+# P8
+# Define the class of people that their couples are only Valyrian.
+:OnlyMarriesValyrians a owl:Class ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:Restriction ;
+        owl:onProperty :hasSpouse ;
+        owl:allValuesFrom :Valyrian
+    ] .
