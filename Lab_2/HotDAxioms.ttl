@@ -27,16 +27,13 @@
 # P4
 # Define hasSibling: two people are siblings if one person's parent
 # is also parent of the other (via hasParent -> hasChild chain).
-:hasSibling a owl:ObjectProperty, owl:SymmetricProperty, owl:IrreflexiveProperty ;
+:hasSibling a owl:ObjectProperty, owl:SymmetricProperty;
     owl:propertyChainAxiom ( :hasParent :hasChild ) .
 
 # Define hasCousin: a person is cousin of another if
 # person -> parent -> sibling of parent -> child.
-:hasCousin a owl:ObjectProperty, owl:SymmetricProperty, owl:IrreflexiveProperty;
+:hasCousin a owl:ObjectProperty, owl:SymmetricProperty;
     owl:propertyChainAxiom ( :hasParent :hasSibling :hasChild ) .
-
-# Cousins and siblings cannot be the same relation.
-:hasCousin owl:propertyDisjointWith :hasSibling .
 
 # P5
 # Class of people that belong to House Targaryen
@@ -86,7 +83,7 @@
 # Define the class of people that their couples are only Valyrian.
 :OnlyMarriesValyrians a owl:Class ;
     owl:equivalentClass [
-        a owl:Class ;
+        a owl:Class ,
         owl:Restriction ;
         owl:onProperty :hasSpouse ;
         owl:allValuesFrom :Valyrian
