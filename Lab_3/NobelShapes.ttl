@@ -1,0 +1,142 @@
+@prefix ex: <http://example.org#> .
+@prefix dash: <http://datashapes.org/dash#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+
+# P1: El error correspondía a que el datatype de birthday no era xsd:string, sino xsd:date.
+# P2: Se agregan shapes adicionales para validar otras propiedades de la clase Person, como el nombre y el género.
+# Para corregirlo, se cambió el valor de sh:datatype a xsd:date.
+ex:PersonShape a sh:NodeShape ;
+    sh:targetClass foaf:Person ;
+    sh:property [
+       sh:path foaf:birthday ;
+       sh:datatype xsd:date ;
+    ] ;
+    sh:property [
+       sh:path foaf:givenName ;
+       sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+       sh:path foaf:familyName ;
+       sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+       sh:path foaf:name ;
+       sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+       sh:path foaf:gender ;
+       sh:datatype xsd:string ;
+    ] .
+
+
+##############################################################################################################
+@prefix ex: <http://example.org#> .
+@prefix dash: <http://datashapes.org/dash#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix nobel: <http://data.nobelprize.org/terms/> .
+@prefix dbo:   <http://dbpedia.org/ontology/> .
+@prefix dbp:   <http://dbpedia.org/property/> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+
+# P3: Se agrega una nueva shape para validar la propiedad dbo:affiliation de la clase nobel:Laureate, 
+# asegurando que cada laureado tenga al menos una afiliación a una universidad.
+# P4: Como no se consideran otro tipo de afiliaciones, se modifica para que solo una de las afiliaciones 
+# sea una Universidad, y se establece un mínimo de 1 para garantizar que cada laureado tenga al menos una 
+# afiliación a una Universidad.
+# P5: Se añade una restricción que exija que dbp:dateOfBirth sea igual a foaf:birthday.
+# Esto se valida mal si alguna de las propiedades no esta definida, ya que con sh:equals se exige la 
+# existencia e igualdad de ambas propiedades para que la validación funcione.
+# P6: Una forma de bypasear este problema es utilizando sh:or y sh:and para permitir que solo una de las 
+# propiedades exista.
+ex:LaureateShape a sh:NodeShape ;
+    sh:targetClass nobel:Laureate;
+	sh:property [
+    	sh:path dbo:affiliation ;
+        sh:minCount 1 ;
+        sh:qualifiedValueShape [
+            sh:class dbo:University ;
+        ] ;
+        sh:qualifiedMinCount 1;
+        sh:qualifiedMaxCount 1
+    ] ;
+    sh:property [
+        sh:or (
+            [
+                sh:and (
+                    [sh:path dbp:dateOfBirth ;
+                    sh:equals foaf:birthday ;]
+
+                    [sh:path dbp:dateOfBirth ;
+                    sh:minCount 1 ;]
+
+                    [sh:path foaf:birthday ;
+                    sh:minCount 1 ;]
+                )
+            ]
+            [
+                sh:and (
+                    [sh:path dbp:dateOfBirth ;
+                    sh:maxCount 0 ;]
+
+                    [sh:path foaf:birthday ;
+                    sh:minCount 1 ;]
+                )
+            ]
+            [
+                sh:and (
+                    [sh:path dbp:dateOfBirth ;
+                    sh:minCount 1 ;]
+
+                    [sh:path foaf:birthday ;
+                    sh:maxCount 0 ;]
+                )
+            ]
+        )
+    ] .
+
+
+##############################################################################################################
+@prefix ex: <http://example.org#> .
+@prefix dash: <http://datashapes.org/dash#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix nobel: <http://data.nobelprize.org/terms/> .
+@prefix dbo:   <http://dbpedia.org/ontology/> .
+@prefix dbp:   <http://dbpedia.org/property/> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+
+
+# P7: Se agrega una restricción que valide foaf:name, foaf:givenName y foaf:familyName, usando sh:pattern
+ex:LaureateNameShape a sh:NodeShape ;
+    sh:targetClass nobel:Laureate ;
+    sh:property [
+       sh:path [
+           sh:alternativePath ( foaf:birthday dbp:dateOfBirth );
+       ] ;
+       sh:datatype xsd:date
+    ] ;
+
+    sh:property [
+       sh:path foaf:name ;
+       sh:datatype xsd:string ;
+       sh:pattern "^[A-Za-z]+([ .'-]?[A-Za-zÀ-ÿ]+)*\\s*$" ;
+    ] ;
+
+    sh:property [
+       sh:path foaf:familyName ;
+       sh:datatype xsd:string ;
+       sh:pattern "^[A-Za-zÀ-ÿ]+([ .'-]?[A-Za-zÀ-ÿ0-9]+)*$" ;
+    ] ;
+
+    sh:property [
+       sh:path foaf:givenName ;
+       sh:datatype xsd:string ;
+       sh:pattern "^[A-Z][a-zA-Z]*([.-]?[A-Za-z]+)*$" ;
+    ] .
