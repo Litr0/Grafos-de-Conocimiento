@@ -126,17 +126,20 @@ ex:LaureateNameShape a sh:NodeShape ;
     sh:property [
        sh:path foaf:name ;
        sh:datatype xsd:string ;
-       sh:pattern "^[A-Za-z]+([ .'-]?[A-Za-zÀ-ÿ]+)*\\s*$" ;
+       sh:minLength 2 ;
+       sh:pattern "^[^0-9_]+$"
     ] ;
 
     sh:property [
        sh:path foaf:familyName ;
        sh:datatype xsd:string ;
-       sh:pattern "^[A-Za-zÀ-ÿ]+([ .'-]?[A-Za-zÀ-ÿ0-9]+)*$" ;
+       sh:minLength 2 ;
+       sh:pattern "^[^0-9_]+$" ;
     ] ;
 
     sh:property [
        sh:path foaf:givenName ;
        sh:datatype xsd:string ;
-       sh:pattern "^[A-Z][a-zA-Z]*([.-]?[A-Za-z]+)*$" ;
+       sh:minLength 2 ;
+       sh:pattern "^[^0-9_]+$" ;
     ] .
