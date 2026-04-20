@@ -114,6 +114,11 @@ ex:LaureateShape a sh:NodeShape ;
 
 
 # P7: Se agrega una restricción que valide foaf:name, foaf:givenName y foaf:familyName, usando sh:pattern
+# P8: Se añade una propiedad que Verifique que el valor de la propiedad nobel:share de los nodos tipo 
+# nobel:LaureateAward sea 1, 2 , 3 o 4, utilizando sh:in.
+# P9: Se agrega la propiedad a los premios tipo nobel:NobelPrize tengan un nobel:motivation con una longitud 
+# mínima de 10 caracteres y que sea string utilizando sh:minLength y puede haber, a lo más una motivación por
+# el idioma.
 ex:LaureateNameShape a sh:NodeShape ;
     sh:targetClass nobel:Laureate ;
     sh:property [
@@ -142,4 +147,17 @@ ex:LaureateNameShape a sh:NodeShape ;
        sh:datatype xsd:string ;
        sh:minLength 2 ;
        sh:pattern "^[^0-9_]+$" ;
+    ] ;
+
+    sh:property [
+       sh:path nobel:share ;
+       sh:datatype xsd:integer ;
+       sh:in ( 1 2 3 4 ) ;
+    ] ;
+
+    sh:property [
+       sh:path nobel:motivation ;
+       sh:datatype xsd:string ;
+       sh:minLength 10 ;
+       sh:maxCount 1 ;
     ] .
