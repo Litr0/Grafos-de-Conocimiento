@@ -4,6 +4,10 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
 
+# Laboratorio 3.
+# Integrantes:
+# - Gonzalo Sobarzo
+
 # P1: El error correspondía a que el datatype de birthday no era xsd:string, sino xsd:date.
 # P2: Se agregan shapes adicionales para validar otras propiedades de la clase Person, como el nombre y el género.
 # Para corregirlo, se cambió el valor de sh:datatype a xsd:date.
