@@ -1,0 +1,73 @@
+# P1: Consulta que obtiene los Q-code de las entidades que tengan la rdfs:label "Universidad de Chile"
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX bd: <http://www.bigdata.com/rdf#>
+
+SELECT ?item WHERE {
+  ?item rdfs:label "Universidad de Chile"@es .
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "es,en". }
+}
+
+# Donde ?item es el Q-code de la entidad que tiene el rdfs:label "Universidad de Chile" y wd:Q232141 es el código correspondiente a 
+# la Universidad.
+
+# P2: Cadena de clases de las que la Universidad de Chile es instancia.
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX bd: <http://www.bigdata.com/rdf#>
+
+SELECT DISTINCT ?class ?classLabel WHERE {
+  wd:Q232141 wdt:P31/wdt:P279* ?class .
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "es,en". }
+}
+
+# Donde wdt:P31 es la propiedad "instancia de" y wdt:P279 es la propiedad "subclase de".
+
+# P3: Etiquetas de universidades de América del Sur fundadas antes que la U. de Chile
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX bd: <http://www.bigdata.com/rdf#>
+
+SELECT DISTINCT ?university ?universityLabel WHERE {
+  wd:Q232141 wdt:P571 ?uchileDate .
+  BIND(YEAR(?uchileDate) AS ?uchileYear)
+
+  ?university wdt:P31/wdt:P279* wd:Q3918 ;
+              wdt:P571 ?foundingDate ;
+              wdt:P17 ?country .
+
+  ?country wdt:P30 wd:Q18 .
+
+  FILTER(YEAR(?foundingDate) < ?uchileYear)
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "es,en". }
+}
+
+# Donde wdt:P571 es la propiedad "fecha de fundación", wdt:P17 es la propiedad "país", wdt:P30 es la propiedad "continente" y wd:Q18 
+# es el código de América del Sur.
+
+
+# P4: Personas que estudiaron en la U. de Chile y en otra universidad chilena
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX bd: <http://www.bigdata.com/rdf#>
+
+SELECT DISTINCT ?person ?otherUniversity WHERE {
+  ?person wdt:P69 wd:Q232141 ;
+          wdt:P69 ?otherUniversity .
+
+  FILTER(?otherUniversity != wd:Q232141)
+
+  ?otherUniversity wdt:P31/wdt:P279* wd:Q3918 ;  # universidad (o subtipo)
+                   wdt:P17 wd:Q298 .             # Chile
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "es,en". }
+}
+ORDER BY ?personLabel ?otherUniversityLabel
+
+# Donde wdt:P69 es la propiedad "educación", wd:Q232141 es el código de la Universidad de Chile, wd:Q3918 es el código de universidad y 
+# wd:Q298 es el código de Chile.
