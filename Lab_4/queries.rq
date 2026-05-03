@@ -1,3 +1,7 @@
+# Laboratorio 4: Consultas SPARQL
+# Integrantes:
+# - Gonzalo Sobarzo
+
 # P1: Consulta que obtiene los Q-code de las entidades que tengan la rdfs:label "Universidad de Chile"
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX wikibase: <http://wikiba.se/ontology#>
