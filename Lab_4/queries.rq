@@ -71,3 +71,107 @@ ORDER BY ?personLabel ?otherUniversityLabel
 
 # Donde wdt:P69 es la propiedad "educación", wd:Q232141 es el código de la Universidad de Chile, wd:Q3918 es el código de universidad y 
 # wd:Q298 es el código de Chile.
+
+# P5: Contar cuántos ex alumnos de la U. de Chile hay por cada ocupación distinta, ordenados de mayor a menor
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX bd: <http://www.bigdata.com/rdf#>
+
+SELECT ?occupation ?occupationLabel (COUNT(DISTINCT ?person) AS ?count) WHERE {
+  ?person wdt:P69 wd:Q232141 ;
+          wdt:P106 ?occupation .
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "es,en". }
+}
+GROUP BY ?occupation ?occupationLabel
+ORDER BY DESC(?count)
+
+# Donde wdt:P106 es la propiedad "ocupación", wd:Q232141 es el código de la Universidad de Chile.
+
+# P6: Obtener las etiquetas de ex alumnos de la U. de Chile que hayan recibido un premio o distinción (wdt:P166)
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX bd: <http://www.bigdata.com/rdf#>
+
+SELECT DISTINCT ?person ?personLabel ?award ?awardLabel ?year WHERE {
+  ?person wdt:P69 wd:Q232141 ;
+          p:P166 ?awardStatement .
+
+  ?awardStatement ps:P166 ?award .
+  OPTIONAL { ?awardStatement pq:P585 ?awardDate . }
+  BIND(YEAR(?awardDate) AS ?year)
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "es,en". }
+}
+ORDER BY ?year ?personLabel
+
+# Donde wdt:P69 es la propiedad "educación", wd:Q232141 es el código de la Universidad de Chile, p:P166 es la propiedad de 
+# declaración para premios.
+
+# P7: etiquetas de las personas que hayan estudiado o trabajado en la Universidad de Chile.
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX bd: <http://www.bigdata.com/rdf#>
+
+SELECT DISTINCT ?personLabel ?role ?birthDate ?countryLabel WHERE {
+  {
+    ?person wdt:P69 wd:Q232141 .
+    BIND("estudiante" AS ?role)
+  }
+  UNION
+  {
+    ?person wdt:P108 wd:Q232141 .
+    BIND("trabajador" AS ?role)
+  }
+
+  OPTIONAL { ?person wdt:P569 ?birthDate . }
+  OPTIONAL {
+    ?person wdt:P19 ?birthPlace .
+    ?birthPlace wdt:P17 ?country .
+  }
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "es,en". }
+}
+
+# Donde wdt:P69 es la propiedad "educación", wdt:P108 es la propiedad "empleador", wd:Q232141 es el código de la Universidad de Chile, 
+# wdt:P569 es la propiedad "fecha de nacimiento", wdt:P19 es la propiedad "lugar de nacimiento"
+
+# P8: ex alumnos de la Universidad de Chile, a aquellos que aún están vivos y que tienen una edad mayor al promedio de 
+# edad de los ex alumnos vivos.
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX bd: <http://www.bigdata.com/rdf#>
+
+SELECT ?person ?personLabel ?age WHERE {
+  ?person wdt:P69 wd:Q232141 ;
+          wdt:P569 ?birthDate .
+
+  FILTER NOT EXISTS { ?person wdt:P570 ?deathDate }
+
+  BIND(YEAR(NOW()) - YEAR(?birthDate) AS ?age)
+
+  {
+    SELECT (AVG(?avgAge) AS ?averageAge) WHERE {
+      ?p wdt:P69 wd:Q232141 ;
+         wdt:P569 ?bd .
+      FILTER NOT EXISTS { ?p wdt:P570 ?dd }
+      BIND(YEAR(NOW()) - YEAR(?bd) AS ?avgAge)
+    }
+  }
+
+  FILTER(?age > ?averageAge)
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "es,en". }
+}
+ORDER BY ASC(?age)
+
+# Donde wdt:P69 es la propiedad "educación", wd:Q232141 es el código de la Universidad de Chile, 
+# wdt:P569 es la propiedad "fecha de nacimiento" y wdt:P570 es la propiedad "fecha de muerte".
+# Se observa que hay gente de mas de 125 años, lo que sugiere que hay datos erróneos en Wikidata.
