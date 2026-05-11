@@ -41,4 +41,10 @@ RETURN person, number_of_friends
 ORDER BY number_of_friends DESC
 LIMIT 3
 
-# P9: Pares de actores que han trabajado en m ́as de una película juntos.
+# P9: Pares de actores que han trabajado en más de una película juntos.
+MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:ACTED_IN]-(n:Person)
+WHERE elementId(p) < elementId(n)
+WITH p.name AS actor_1, n.name AS actor_2, COUNT(DISTINCT m) AS number_of_movies
+WHERE number_of_movies > 1
+RETURN actor_1, actor_2, number_of_movies
+ORDER BY number_of_movies DESC
