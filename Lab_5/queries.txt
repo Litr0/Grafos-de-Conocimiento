@@ -1,0 +1,44 @@
+# Laboratorio 5
+# Integrante: Gonzalo Sobarzo.
+
+# P1: Obtener ista de todas las películas:
+MATCH (n:Movie) 
+RETURN n.title, n.genre
+
+# P2: lista de todos los actores que aparecen en Inception y el personaje que interpretaron.
+MATCH (p)-[r:ACTED_IN]->(:Movie {title: 'Inception'})
+RETURN p.name, r.role
+
+# P3: títulos de las películas que tienen más de dos actores
+MATCH (p)-[r:ACTED_IN]->(m:Movie)
+WITH COUNT(p) as number_of_actors, m as movie
+WHERE number_of_actors > 2
+RETURN movie.title
+
+# P4: películas donde el director también actúa
+MATCH (p)-[r:ACTED_IN]->(m:Movie), (p) -[d:DIRECTED] -> (m:Movie)
+RETURN m.title, p.name, r.role
+
+# P5: Las personas que han actuado en alguna película de Christopher Nolan, pero no en una de Quentin Tarantino
+MATCH (p)-[r:ACTED_IN]->(m:Movie)<-[:DIRECTED]-(nolan:Person {name: "Christopher Nolan"})
+WHERE NOT EXISTS {
+  MATCH (p)-[:ACTED_IN]->(:Movie)<-[:DIRECTED]-(tarantino:Person {name: "Quentin Tarantino"})
+}
+RETURN p.name
+
+# P6: Para cada persona del grafo, contar cuántos de sus amigos han actuado o dirigido una película.
+MATCH (p)-[:FRIEND_OF]->(friend)-[:ACTED_IN|DIRECTED]->(m:Movie)
+RETURN p.name, COUNT(DISTINCT friend)
+
+# P7: Lista transitiva de amistades de Margot Robbie.
+MATCH (p:Person {name: "Margot Robbie"})-[:FRIEND_OF*]->(friend)
+RETURN DISTINCT friend.name
+
+# P8: Las 3 personas con el mayor número de amigos.
+MATCH (p:Person)-[:FRIEND_OF]->(friend:Person)
+WITH p.name as person, COUNT(DISTINCT friend) as number_of_friends
+RETURN person, number_of_friends
+ORDER BY number_of_friends DESC
+LIMIT 3
+
+# P9: Pares de actores que han trabajado en m ́as de una película juntos.
