@@ -93,4 +93,3 @@ dragons:Viserion a v:Dragon ;
 
 dragons:Vhagar a v:Dragon ;
     foaf:name "Vhagar" .
-

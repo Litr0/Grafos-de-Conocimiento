@@ -1,0 +1,132 @@
+# P1
+#Versión con los IRIs
+PREFIX v: <http://example.org/vocab#>
+
+SELECT ?c 
+WHERE {
+    ?c a v:Castle .
+}
+# 13 castillos
+
+#Versión con los nombres
+PREFIX v: <http://example.org/vocab#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT DISTINCT ?name 
+WHERE {
+    ?c a v:Castle .
+    ?c foaf:name ?name .
+}
+# 13 castillos
+
+# Se ven la misma cantidad de castillos, pero hay nombres repetidos en la segunda versión, ya que al venir de federaciones distintas el nombre va a salir repetido por tener distinta IRI, aunque se refieran al mismo castillo. 
+# En la primera versión, al usar IRIs, cada castillo es único, aunque tengan el mismo nombre.
+
+# P2
+PREFIX v: <http://example.org/vocab#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT DISTINCT ?name 
+WHERE {
+    ?c a v:Dragon .
+    ?c foaf:name ?name .
+    FILTER NOT EXISTS{
+        ?p v:rides ?c
+        }
+}
+
+# P3
+PREFIX v: <http://example.org/vocab#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT DISTINCT ?name 
+WHERE {
+    ?c a v:Knight .
+    ?c foaf:name ?name .
+    ?p a v:Dragon
+    FILTER EXISTS{
+        ?c v:rides ?p
+        }
+}
+
+# P4
+PREFIX v: <http://example.org/vocab#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT DISTINCT ?name 
+WHERE {
+    { ?person a v:King . }
+    UNION
+    { ?person a v:Queen . }
+    ?person foaf:name ?name .
+    FILTER NOT EXISTS {
+        ?person v:rides ?dragon .
+    }
+}
+
+# P5
+PREFIX v: <http://example.org/vocab#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT DISTINCT ?name 
+WHERE {
+    ?c v:spouse ?spouse .
+    ?c foaf:name ?name .
+}
+GROUP BY ?c ?name
+HAVING (COUNT(DISTINCT ?spouse) > 1)
+# Sin la propiedad simétrica retorna 3 nombres, Con la propiedad simétrica también se retornan los mismos 3 nombres.
+
+# P6
+PREFIX v: <http://example.org/vocab#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT DISTINCT ?kingName 
+WHERE {
+    ?king a v:King .
+    ?king foaf:name ?kingName .
+    ?king v:spouse ?spouse .
+    ?spouse v:memberOf ?house .
+
+    FILTER ( !STRENDS(STR(?house), "HouseTargaryen") )
+}
+
+# P7
+PREFIX v: <http://example.org/vocab#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT DISTINCT ?name 
+WHERE {
+    ?person v:memberOf ?house .
+    FILTER ( STRENDS(STR(?house), "HouseTargaryen") )
+    ?person foaf:name ?name .
+    FILTER NOT EXISTS {
+        ?person v:rides ?dragon .
+    }
+}
+
+# P8
+PREFIX v: <http://example.org/vocab#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT DISTINCT ?name 
+WHERE {
+    { ?person a v:King . }
+    UNION
+    { ?person a v:Queen . }
+    
+    ?person v:ancestralHome ?home .
+    
+    ?home foaf:name ?name .
+}
+
+# P9
+PREFIX v: <http://example.org/vocab#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT ?dragonName (COUNT(?rider) AS ?riderCount)
+WHERE {
+    ?dragon foaf:name ?dragonName .
+    ?rider v:rides ?dragon .
+}
+GROUP BY ?dragonName
