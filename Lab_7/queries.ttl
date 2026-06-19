@@ -1,0 +1,84 @@
+# Laboratorio 7
+# Gonzalo Sobarzo
+
+# P1: Aeropuerto con mayor grado.
+MATCH (a:Airport)-[r:vuelo]-()
+RETURN a.IATA as airport_code, a.Name as airport_name, count(r) as degree
+ORDER BY degree DESC
+LIMIT 1
+# El aeropuerto con mayor grado es el Aeropuerto Frankfurt am Main (FRA) con un grado de 477.
+
+# P2: Grafo que incluye solo los aeropuertos de Estados Unidos y las rutas existentes entre ellos.
+# Posteriormente, se calcula la centralidad Closeness.
+# Por último se cálcula PageRank.
+# Proyección del grafo de aeropuertos de Estados Unidos.
+MATCH (source:Airport)
+WHERE source.Country = 'United States'
+OPTIONAL MATCH (source)-[r:vuelo]->(target:Airport)
+WHERE target.Country = 'United States'
+WITH gds.graph.project(
+  'us_airports_graph',
+  source,
+  target
+) AS g
+RETURN g.graphName, g.nodeCount, g.relationshipCount
+# Cálculo de centralidad Closeness.
+CALL gds.closeness.stream('us_airports_graph')
+YIELD nodeId, score
+RETURN gds.util.asNode(nodeId).IATA AS airport_code,
+       gds.util.asNode(nodeId).Name AS airport_name,
+       gds.util.asNode(nodeId).City AS city,
+       score AS closeness
+ORDER BY closeness DESC
+# Cálculo de PageRank.
+CALL gds.pageRank.stream('us_airports_graph')
+YIELD nodeId, score
+RETURN gds.util.asNode(nodeId).IATA AS airport_code,
+       gds.util.asNode(nodeId).Name AS airport_name,
+       gds.util.asNode(nodeId).City AS city,
+       score AS pagerank
+ORDER BY pagerank DESC
+
+# P3: Se proyecta el grafo completo para detectar comunidades con el algoritmo de Leiden.
+# Proyección del grafo completo.
+CALL gds.graph.project(
+  'airports_graph',
+  'Airport',
+  { vuelo: { orientation: 'UNDIRECTED' } }
+)
+YIELD graphName, nodeCount, relationshipCount
+RETURN graphName, nodeCount, relationshipCount;
+
+# Detección de comunidades con el algoritmo de Leiden.
+CALL gds.leiden.stream('airports_graph', { randomSeed: 42 })
+YIELD nodeId, communityId
+RETURN gds.util.asNode(nodeId).City AS city,
+       gds.util.asNode(nodeId).Country AS country,
+       gds.util.asNode(nodeId).IATA AS airport_code,
+       communityId
+ORDER BY country ASC, city ASC, airport_code ASC;
+
+# P4: Se usa búsqueda por amplitud, se encuentran los países que se pueden alcanzar desde el aeropuerto JKF, con a lo más 4 vuelos.
+MATCH (jfk:Airport {IATA: 'JFK'})
+CALL gds.bfs.stream('airports_graph', {
+  sourceNode: jfk,
+  maxDepth: 4
+})
+YIELD path
+UNWIND nodes(path) AS airport
+RETURN DISTINCT airport.Country AS country
+ORDER BY country ASC
+
+# P5: Top 10 de aeropuertos con mayor similitud topológica con el aeropuerto SCL (Santiago de Chile).
+MATCH (scl:Airport {IATA: 'SCL'})
+CALL gds.nodeSimilarity.filtered.stream('airports_graph', {
+  sourceNodeFilter: scl,
+  topK: 10
+})
+YIELD node1, node2, similarity
+RETURN
+  gds.util.asNode(node2).IATA AS airport_code,
+  gds.util.asNode(node2).Name AS airport_name,
+  gds.util.asNode(node2).City AS city,
+  similarity
+ORDER BY similarity DESC
